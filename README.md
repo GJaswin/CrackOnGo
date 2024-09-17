@@ -2,7 +2,8 @@
  An aircrack-ng script built with Go
 
 # Installation and running
-1. Download and install the [Go compiler](https://go.dev)    
+1. Download and install the [Go compiler](https://go.dev)  
+   
    Or use a package manager:  
    ```
    sudo apt install golang
