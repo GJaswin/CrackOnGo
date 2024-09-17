@@ -16,6 +16,14 @@ var bssid string
 var channel string
 var err error
 
+const (
+	Reset  = "\033[0m"
+	Red    = "\033[31m"
+	Green  = "\033[32m"
+	Yellow = "\033[33m"
+	Blue   = "\033[34m"
+)
+
 func cleanup() {
 	fmt.Println("Cleaning up old files...")
 	err = os.RemoveAll("working_dir")
@@ -44,12 +52,12 @@ func interrupt() chan bool {
 }
 
 func checkPackages() {
-	fmt.Println("Checking if aircrack is installed...")
+	fmt.Println(Yellow+"Checking if aircrack is installed..."+Reset)
 	_, err := exec.Command("aircrack-ng", "--help").Output()
 
 	if err != nil {
-		fmt.Println("Error: ", err)
-		fmt.Println("Aicrack-ng not found, installing...")
+		fmt.Println(Red+"Error: "+Reset, err)
+		fmt.Println(Blue+"Aicrack-ng not found, installing..."+Reset)
 
 		osInfoFile, err := os.ReadFile("/etc/os-release")
 		osinfo := string(osInfoFile)
@@ -57,13 +65,13 @@ func checkPackages() {
 		errCheck(err)
 
 		switch {
-		case strings.Contains(osinfo, "ID=ubuntu") || strings.Contains(osinfo, "ID=debian"):
+		case strings.Contains(osinfo, "ID=ubuntu") || strings.Contains(osinfo, "ID=debian") || strings.Contains(osinfo, "ID_LIKE=debian"):
 			fmt.Printf("\nInstalling aircrack-ng using apt, press Ctrl + C if you want to install using a different package manager...")
 			cmd = exec.Command("sudo", "apt", "install", "-y", "aircrack-ng")
 			err = cmd.Run()
 			errCheck(err)
 
-		case strings.Contains(osinfo, "ID=manjaro") || strings.Contains(osinfo, "ID=arch"):
+		case strings.Contains(osinfo, "ID=manjaro") || strings.Contains(osinfo, "ID=arch") || strings.Contains(osinfo, "ID_LIKE=arch"):
 			fmt.Printf("Installing aircrack-ng using pacman, press Ctrl + C if you want to install using a different package manager...\n")
 			time.Sleep(3 * time.Second)
 			cmd = exec.Command("sudo", "pacman", "-S", "aircrack-ng", "--noconfirm")
@@ -71,11 +79,11 @@ func checkPackages() {
 			errCheck(err)
 
 		default:
-			fmt.Println("No package managers found, install aircrack-ng yourself and run the script again")
+			fmt.Println(Red+"No package managers found, install aircrack-ng yourself and run the script again"+Reset)
 			os.Exit(-2)
 		}
 
-		fmt.Println("Aircrack-ng installed successfully")
+		fmt.Println(Green+"Aircrack-ng installed successfully"+Reset)
 		time.Sleep(1 * time.Second)
 	}
 	fmt.Println("Aircrack-ng available")
@@ -85,7 +93,7 @@ func checkPackages() {
 
 func startMonitor() {
 
-	fmt.Println("Enter which network interface you want to use: ")
+	fmt.Println(Blue+"Enter which network interface you want to use: "+Reset)
 	time.Sleep(1 * time.Second)
 	cmd = exec.Command("ip", "-o", "link", "show")
 	cmd.Stdout = os.Stdout
@@ -100,7 +108,7 @@ func startMonitor() {
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 
-	fmt.Printf("Starting Monitor Mode using %s...\n", nic)
+	fmt.Printf(Yellow+"Starting Monitor Mode using %s...\n"+Reset, nic)
 
 	if !strings.Contains(nic, "mon") {
 		cmd = exec.Command("sudo", "airmon-ng", "check", "kill")
@@ -125,13 +133,13 @@ func startMonitor() {
 	errCheck(err)
 
 	<-interrupt()
-	fmt.Println("Exiting airodump-ng...")
+	fmt.Println(Yellow+"Exiting airodump-ng..."+Reset)
 	cmd.Wait()
 	cmd.Process.Kill()
 
-	fmt.Println("Enter BSSID of the network: ")
+	fmt.Println(Blue+"Enter BSSID of the network: "+Reset)
 	fmt.Scanln(&bssid)
-	fmt.Println("Enter channel: ")
+	fmt.Println(Blue+"Enter channel: "+Reset)
 	fmt.Scanln(&channel)
 
 	cmd = exec.Command("sudo", "airodump-ng", "-w", "./working_dir/dump-network", "--output-format", "csv", "--bssid", bssid, "--channel", channel, "-b", "abg", nic)
@@ -141,7 +149,7 @@ func startMonitor() {
 	errCheck(err)
 
 	<-interrupt()
-	fmt.Println("Exiting airodump-ng...")
+	fmt.Println(Yellow+"Exiting airodump-ng..."+Reset)
 	cmd.Wait()
 	cmd.Process.Kill()
 }
@@ -154,7 +162,7 @@ func deauth() {
 	errCheck(err)
 
 	<-interrupt()
-	fmt.Println("Exiting...")
+	fmt.Println(Yellow+"Exiting..."+Reset)
 	cmd.Wait()
 	cmd.Process.Kill()
 }
@@ -171,9 +179,9 @@ func cap() {
 	<-interrupt()
 	cmd.Wait()
 
-	fmt.Println("Choose a wordlist to run dictionary attack:")
+	fmt.Println(Blue+"Enter a wordlist file path to run dictionary attack:"+Reset)
 	fmt.Scanln(&wordlist)
-	fmt.Println("Press Ctrl + C to stop or exit after password is found...")
+	fmt.Println(Yellow+"Press Ctrl + C to stop or exit after password is found..."+Reset)
 	time.Sleep(2 * time.Second)
 
 	cmd = exec.Command("sudo", "aircrack-ng", "-w", wordlist, "-b", bssid, "./working_dir/handshake-01.cap")
@@ -184,7 +192,7 @@ func cap() {
 
 	<-interrupt()
 	cmd.Wait()
-	fmt.Println("Exiting...")
+	fmt.Println(Yellow+"Exiting..."+Reset)
 	cmd.Process.Kill()
 }
 
@@ -202,7 +210,7 @@ func main() {
 	startMonitor()
 
 	for ch != 0 {
-		fmt.Println("What attack do you want to perform?")
+		fmt.Println(Blue+"What attack do you want to perform?"+Reset)
 		fmt.Println("1. Deauth")
 		fmt.Println("2. Handshake Capture + Password Crack")
 		fmt.Println("0. Exit")
@@ -210,7 +218,7 @@ func main() {
 
 		switch ch {
 		case 0:
-			fmt.Println("Turning off monitor mode and exiting...")
+			fmt.Println(Green+"Turning off monitor mode and exiting..."+Reset)
 			cmd = exec.Command("sudo", "airmon-ng", "stop", nic)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
