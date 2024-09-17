@@ -103,6 +103,10 @@ func startMonitor() {
 	fmt.Printf("Starting Monitor Mode using %s...\n", nic)
 
 	if !strings.Contains(nic, "mon") {
+		cmd = exec.Command("sudo", "airmon-ng", "check", "kill")
+		err = cmd.Run()
+		errCheck(err)
+
 		cmd = exec.Command("sudo", "airmon-ng", "start", nic)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
