@@ -52,12 +52,12 @@ func interrupt() chan bool {
 }
 
 func checkPackages() {
-	fmt.Println(Yellow+"Checking if aircrack is installed..."+Reset)
+	fmt.Println(Yellow + "Checking if aircrack is installed..." + Reset)
 	_, err := exec.Command("aircrack-ng", "--help").Output()
 
 	if err != nil {
 		fmt.Println(Red+"Error: "+Reset, err)
-		fmt.Println(Blue+"Aicrack-ng not found, installing..."+Reset)
+		fmt.Println(Blue + "Aicrack-ng not found, installing..." + Reset)
 
 		osInfoFile, err := os.ReadFile("/etc/os-release")
 		osinfo := string(osInfoFile)
@@ -79,11 +79,11 @@ func checkPackages() {
 			errCheck(err)
 
 		default:
-			fmt.Println(Red+"No package managers found, install aircrack-ng yourself and run the script again"+Reset)
+			fmt.Println(Red + "No package managers found, install aircrack-ng yourself and run the script again" + Reset)
 			os.Exit(-2)
 		}
 
-		fmt.Println(Green+"Aircrack-ng installed successfully"+Reset)
+		fmt.Println(Green + "Aircrack-ng installed successfully" + Reset)
 		time.Sleep(1 * time.Second)
 	}
 	fmt.Println("Aircrack-ng available")
@@ -93,7 +93,7 @@ func checkPackages() {
 
 func startMonitor() {
 
-	fmt.Println(Blue+"Enter which network interface you want to use: "+Reset)
+	fmt.Println(Blue + "Enter which network interface you want to use: " + Reset)
 	time.Sleep(1 * time.Second)
 	cmd = exec.Command("ip", "-o", "link", "show")
 	cmd.Stdout = os.Stdout
@@ -133,13 +133,13 @@ func startMonitor() {
 	errCheck(err)
 
 	<-interrupt()
-	fmt.Println(Yellow+"Exiting airodump-ng..."+Reset)
+	fmt.Println(Yellow + "Exiting airodump-ng..." + Reset)
 	cmd.Wait()
 	cmd.Process.Kill()
 
-	fmt.Println(Blue+"Enter BSSID of the network: "+Reset)
+	fmt.Println(Blue + "Enter BSSID of the network: " + Reset)
 	fmt.Scanln(&bssid)
-	fmt.Println(Blue+"Enter channel: "+Reset)
+	fmt.Println(Blue + "Enter channel: " + Reset)
 	fmt.Scanln(&channel)
 
 	cmd = exec.Command("sudo", "airodump-ng", "-w", "./working_dir/dump-network", "--output-format", "csv", "--bssid", bssid, "--channel", channel, "-b", "abg", nic)
@@ -149,7 +149,7 @@ func startMonitor() {
 	errCheck(err)
 
 	<-interrupt()
-	fmt.Println(Yellow+"Exiting airodump-ng..."+Reset)
+	fmt.Println(Yellow + "Exiting airodump-ng..." + Reset)
 	cmd.Wait()
 	cmd.Process.Kill()
 }
@@ -162,7 +162,7 @@ func deauth() {
 	errCheck(err)
 
 	<-interrupt()
-	fmt.Println(Yellow+"Exiting..."+Reset)
+	fmt.Println(Yellow + "Exiting..." + Reset)
 	cmd.Wait()
 	cmd.Process.Kill()
 }
@@ -179,9 +179,9 @@ func cap() {
 	<-interrupt()
 	cmd.Wait()
 
-	fmt.Println(Blue+"Enter a wordlist file path to run dictionary attack:"+Reset)
+	fmt.Println(Blue + "Enter a wordlist file path to run dictionary attack:" + Reset)
 	fmt.Scanln(&wordlist)
-	fmt.Println(Yellow+"Press Ctrl + C to stop or exit after password is found..."+Reset)
+	fmt.Println(Yellow + "Press Ctrl + C to stop or exit after password is found..." + Reset)
 	time.Sleep(2 * time.Second)
 
 	cmd = exec.Command("sudo", "aircrack-ng", "-w", wordlist, "-b", bssid, "./working_dir/handshake-01.cap")
@@ -192,7 +192,7 @@ func cap() {
 
 	<-interrupt()
 	cmd.Wait()
-	fmt.Println(Yellow+"Exiting..."+Reset)
+	fmt.Println(Yellow + "Exiting..." + Reset)
 	cmd.Process.Kill()
 }
 
@@ -210,7 +210,7 @@ func main() {
 	startMonitor()
 
 	for ch != 0 {
-		fmt.Println(Blue+"What attack do you want to perform?"+Reset)
+		fmt.Println(Blue + "What attack do you want to perform?" + Reset)
 		fmt.Println("1. Deauth")
 		fmt.Println("2. Handshake Capture + Password Crack")
 		fmt.Println("0. Exit")
@@ -218,12 +218,16 @@ func main() {
 
 		switch ch {
 		case 0:
-			fmt.Println(Green+"Turning off monitor mode and exiting..."+Reset)
+			fmt.Println(Green + "Turning off monitor mode and exiting..." + Reset)
 			cmd = exec.Command("sudo", "airmon-ng", "stop", nic)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			err = cmd.Run()
 			errCheck(err)
+
+			cmd = exec.Command("sudo", "NetworkManager", "start")
+			_ = cmd.Run()
+
 			os.Exit(0)
 
 		case 1:
