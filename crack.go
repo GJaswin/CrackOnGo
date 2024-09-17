@@ -93,7 +93,7 @@ func checkPackages() {
 
 func startMonitor() {
 
-	fmt.Println(Blue + "Enter which network interface you want to use: " + Reset)
+	fmt.Println(Blue + "Type the network interface name you want to use: " + Reset)
 	time.Sleep(1 * time.Second)
 	cmd = exec.Command("ip", "-o", "link", "show")
 	cmd.Stdout = os.Stdout
