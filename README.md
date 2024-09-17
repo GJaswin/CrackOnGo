@@ -19,5 +19,5 @@
    
    ```
    go build .
-   ./crack
+   ./crackongo
    ```
