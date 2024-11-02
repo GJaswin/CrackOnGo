@@ -1,4 +1,5 @@
-# Description
+# Description ![GitHub commit activity](https://img.shields.io/github/commit-activity/t/GJaswin/CrackOnGo) ![GitHub last commit](https://img.shields.io/github/last-commit/GJaswin/CrackOnGo) ![GitHub repo size](https://img.shields.io/github/repo-size/GJaswin/CrackOnGo?label=size)
+
  An aircrack-ng script built with Go
 
 # Installation and running
